@@ -6,5 +6,10 @@ namespace ChatApp
         {
             InitializeComponent();
         }
+        static void Main()
+        {
+            Application.Run(new Form1());
+
+        }
     }
 }
