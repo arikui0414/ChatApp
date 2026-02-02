@@ -8,7 +8,7 @@ namespace ChatApp
 {
     public partial class Form1 : Form
     {
-        string ConnectString = "server=127.0.0.1;database=chat_group5;user=root;password=;charset=utf8mb4";
+        string ConnectString = "server=172.16.2.26;database=chat_group5;user=1;password=1;charset=utf8mb4";
 
         string currentUserName = "";
         List<int> msgIds = new List<int>();
@@ -35,7 +35,7 @@ namespace ChatApp
         private bool PerformLogin()
         {
             string user = Interaction.InputBox("Please enter your username", "Login", "");
-            string pass = Interaction.InputBox("Please enter your username", "Login", "");
+            string pass = Interaction.InputBox("Please enter your password", "Login", "");
 
             using (MySqlConnection conn = new MySqlConnection(ConnectString))
             {
@@ -61,7 +61,7 @@ namespace ChatApp
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Failed to connect to the database:" + ex.Message);
+                    MessageBox.Show("Failed to connect to the database: " + ex.Message);
                     return false;
                 }
             }
@@ -86,7 +86,7 @@ namespace ChatApp
                     txtInput.Clear();
                     txtInput.Focus();
                 }
-                catch (Exception ex) { MessageBox.Show("Failed to send:" + ex.Message); }
+                catch (Exception ex) { MessageBox.Show("Failed to send: " + ex.Message); }
             }
         }
 
@@ -141,7 +141,7 @@ namespace ChatApp
                     cmd.Parameters.AddWithValue("@id", targetId);
                     cmd.ExecuteNonQuery();
                 }
-                catch (Exception ex) { MessageBox.Show("Failed to delete:" + ex.Message); }
+                catch (Exception ex) { MessageBox.Show("Failed to delete: " + ex.Message); }
             }
         }
     }
