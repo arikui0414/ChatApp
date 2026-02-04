@@ -11,7 +11,7 @@ namespace ChatApp
         string ConnectString = "server=172.16.2.26;database=chat_group5;user=1;password=1;charset=utf8mb4";
 
         string currentUserName = "";
-        List<int> msgIds = new List<int>();
+        List<int> msgIds = new List<int>();//reserve the messages id for delete system
 
         public Form1()
         {
@@ -22,7 +22,7 @@ namespace ChatApp
         {
             if (PerformLogin())
             {
-                timer1.Interval = 1000;
+                timer1.Interval = 1000;//1ms
                 timer1.Start();
                 this.Text = "Chat App Group5 - Welcome: " + currentUserName;
             }
@@ -70,7 +70,10 @@ namespace ChatApp
         private void btnSend_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtInput.Text))
+            {
                 return;
+            }
+
 
             using (MySqlConnection conn = new MySqlConnection(ConnectString))
             {
@@ -86,7 +89,10 @@ namespace ChatApp
                     txtInput.Clear();
                     txtInput.Focus();
                 }
-                catch (Exception ex) { MessageBox.Show("Failed to send: " + ex.Message); }
+                catch (Exception ex)
+                { 
+                    MessageBox.Show("Failed to send: " + ex.Message);
+                }
             }
         }
 
@@ -102,10 +108,13 @@ namespace ChatApp
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        int savedIndex = lstMessages.SelectedIndex;
+                        int savedIndex = lstMessages.SelectedIndex;  //remember seleceted line
+
+                        //refresh messages list
                         lstMessages.Items.Clear();
                         msgIds.Clear();
 
+                        //messages list generator
                         while (reader.Read())
                         {
                             int id = Convert.ToInt32(reader["id"]);
@@ -117,18 +126,24 @@ namespace ChatApp
                             msgIds.Add(id);
                         }
 
-                        if (savedIndex != -1 && savedIndex < lstMessages.Items.Count)
+                        if (savedIndex != -1 && savedIndex < lstMessages.Items.Count)//-1 => null
                             lstMessages.SelectedIndex = savedIndex;
                     }
                 }
-                catch { }
+                catch
+                {
+                    
+                }
             }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (lstMessages.SelectedIndex == -1)
+            {
                 return;
+            }
+
             int targetId = msgIds[lstMessages.SelectedIndex];
 
             using (MySqlConnection conn = new MySqlConnection(ConnectString))
@@ -141,7 +156,10 @@ namespace ChatApp
                     cmd.Parameters.AddWithValue("@id", targetId);
                     cmd.ExecuteNonQuery();
                 }
-                catch (Exception ex) { MessageBox.Show("Failed to delete: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to delete: " + ex.Message);
+                }
             }
         }
     }
