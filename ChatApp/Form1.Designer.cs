@@ -23,6 +23,7 @@
             this.btnSend = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.lstOnlineUsers = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // lstMessages
@@ -31,7 +32,7 @@
             this.lstMessages.ItemHeight = 12;
             this.lstMessages.Location = new System.Drawing.Point(12, 12);
             this.lstMessages.Name = "lstMessages";
-            this.lstMessages.Size = new System.Drawing.Size(776, 316);
+            this.lstMessages.Size = new System.Drawing.Size(583, 316);
             this.lstMessages.TabIndex = 0;
             // 
             // txtInput
@@ -66,11 +67,21 @@
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // lstOnlineUsers
+            // 
+            this.lstOnlineUsers.ItemHeight = 12;
+            this.lstOnlineUsers.Location = new System.Drawing.Point(612, 12);
+            this.lstOnlineUsers.Name = "lstOnlineUsers";
+            this.lstOnlineUsers.Size = new System.Drawing.Size(176, 316);
+            this.lstOnlineUsers.TabIndex = 0;
+            this.lstOnlineUsers.SelectedIndexChanged += new System.EventHandler(this.lstOnlineUsers_SelectedIndexChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 461);
+            this.Controls.Add(this.lstOnlineUsers);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnSend);
             this.Controls.Add(this.txtInput);
@@ -80,6 +91,7 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion
@@ -89,5 +101,6 @@
         private System.Windows.Forms.Button btnSend;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.ListBox lstOnlineUsers;
     }
 }

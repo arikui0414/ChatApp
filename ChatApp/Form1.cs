@@ -11,18 +11,20 @@ namespace ChatApp
         string ConnectString = "server=172.16.2.26;database=chat_group5;user=1;password=1;charset=utf8mb4";
 
         string currentUserName = "";
-        List<int> msgIds = new List<int>();//reserve the messages id for delete system
+        List<int> msgIds = new List<int>(); //reserve the messages id for delete system
 
         public Form1()
         {
             InitializeComponent();
+            this.FormClosing += Form1_FormClosing;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
             if (PerformLogin())
             {
-                timer1.Interval = 1000;//1ms
+                timer1.Interval = 1000;
                 timer1.Start();
                 this.Text = "Chat App Group5 - Welcome: " + currentUserName;
             }
@@ -51,6 +53,7 @@ namespace ChatApp
                     if (count > 0)
                     {
                         currentUserName = user;
+                        ExecuteUpdate($"UPDATE users SET is_online = 1 WHERE username = '{user}'");
                         return true;
                     }
                     else
@@ -67,13 +70,17 @@ namespace ChatApp
             }
         }
 
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(currentUserName))
+            {
+                ExecuteUpdate($"UPDATE users SET is_online = 0 WHERE username = '{currentUserName}'");
+            }
+        }
+
         private void btnSend_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtInput.Text))
-            {
-                return;
-            }
-
+            if (string.IsNullOrWhiteSpace(txtInput.Text)) return;
 
             using (MySqlConnection conn = new MySqlConnection(ConnectString))
             {
@@ -90,7 +97,7 @@ namespace ChatApp
                     txtInput.Focus();
                 }
                 catch (Exception ex)
-                { 
+                {
                     MessageBox.Show("Failed to send: " + ex.Message);
                 }
             }
@@ -103,46 +110,61 @@ namespace ChatApp
                 try
                 {
                     conn.Open();
-                    string sql = "SELECT id, sender_name, content, created_at FROM messages WHERE is_deleted = 0 ORDER BY id ASC";
-                    MySqlCommand cmd = new MySqlCommand(sql, conn);
 
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        int savedIndex = lstMessages.SelectedIndex;  //remember seleceted line
+                    RefreshChatMessages(conn);
 
-                        //refresh messages list
-                        lstMessages.Items.Clear();
-                        msgIds.Clear();
-
-                        //messages list generator
-                        while (reader.Read())
-                        {
-                            int id = Convert.ToInt32(reader["id"]);
-                            string name = reader["sender_name"].ToString();
-                            string msg = reader["content"].ToString();
-                            string time = Convert.ToDateTime(reader["created_at"]).ToString("HH:mm:ss");
-
-                            lstMessages.Items.Add($"[{time}] {name}: {msg}");
-                            msgIds.Add(id);
-                        }
-
-                        if (savedIndex != -1 && savedIndex < lstMessages.Items.Count)//-1 => null
-                            lstMessages.SelectedIndex = savedIndex;
-                    }
+                    RefreshOnlineUsers(conn);
                 }
-                catch
+                catch { }
+            }
+        }
+
+        private void RefreshChatMessages(MySqlConnection conn)
+        {
+            string sql = "SELECT id, sender_name, content, created_at FROM messages WHERE is_deleted = 0 ORDER BY id ASC";
+            MySqlCommand cmd = new MySqlCommand(sql, conn);
+
+            using (MySqlDataReader reader = cmd.ExecuteReader())
+            {
+                int savedIndex = lstMessages.SelectedIndex;
+                lstMessages.Items.Clear();
+                msgIds.Clear();
+
+                while (reader.Read())
                 {
-                    
+                    int id = Convert.ToInt32(reader["id"]);
+                    string name = reader["sender_name"].ToString();
+                    string msg = reader["content"].ToString();
+                    string time = Convert.ToDateTime(reader["created_at"]).ToString("HH:mm:ss");
+
+                    lstMessages.Items.Add($"[{time}] {name}: {msg}");
+                    msgIds.Add(id);
+                }
+
+                if (savedIndex != -1 && savedIndex < lstMessages.Items.Count)
+                    lstMessages.SelectedIndex = savedIndex;
+            }
+        }
+
+        private void RefreshOnlineUsers(MySqlConnection conn)
+        {
+            string sql = "SELECT username FROM users WHERE is_online = 1";
+            MySqlCommand cmd = new MySqlCommand(sql, conn);
+
+            using (MySqlDataReader reader = cmd.ExecuteReader())
+            {
+                lstOnlineUsers.Items.Clear();
+                while (reader.Read())
+                {
+                    string name = reader["username"].ToString();
+                    lstOnlineUsers.Items.Add("Online: " + name);
                 }
             }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (lstMessages.SelectedIndex == -1)
-            {
-                return;
-            }
+            if (lstMessages.SelectedIndex == -1) return;
 
             int targetId = msgIds[lstMessages.SelectedIndex];
 
@@ -161,6 +183,24 @@ namespace ChatApp
                     MessageBox.Show("Failed to delete: " + ex.Message);
                 }
             }
+        }
+
+        private void ExecuteUpdate(string sql)
+        {
+            try
+            {
+                using (MySqlConnection conn = new MySqlConnection(ConnectString))
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { }
+        }
+
+        private void lstOnlineUsers_SelectedIndexChanged(object sender, EventArgs e)
+        {
         }
     }
 }
